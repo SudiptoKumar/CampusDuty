@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN profile_setup_completed boolean NOT NULL DEFAULT false;

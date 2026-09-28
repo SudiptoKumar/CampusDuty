@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD CONSTRAINT valid_primary_color CHECK (primary_color ~ '^#[0-9A-Fa-f]{6}$');
