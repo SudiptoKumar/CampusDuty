@@ -206,97 +206,30 @@ Both functions require authorization. They use `SUPABASE_SERVICE_ROLE_KEY`, whil
 
 The repository does not contain a GitHub Actions workflow or another scheduler for these functions. Configure any required scheduling in the Supabase/external infrastructure used by the deployment.
 
+
 ## Deployment
 
+### Netlify
+The repository includes `netlify.toml` and `public/_redirects` for Vite SPA hosting.
+
+- Build command: `npm run build`
+- Publish directory: `dist`
+- Node.js: 22
+
 ### Vercel
+The repository includes `vercel.json` with the Vite build command, `dist` output directory, and SPA fallback.
 
-The repository includes `vercel.json` with a catch-all rewrite to `/index.html`. This is required for the client-side React Router routes to resolve correctly on direct navigation.
+- Install command: `npm ci`
+- Build command: `npm run build`
+- Output directory: `dist`
+- Node.js: 22
 
-Typical deployment flow:
+### Required environment variables
 
-1. Connect the repository to Vercel.
-2. Set the three `VITE_*` environment variables in the Vercel project.
-3. Build using the existing `npm run build` script.
-4. Deploy the generated Vite output.
+Set these environment variables in the deployment platform before building:
 
-The repository does not include a custom Vercel build configuration beyond the SPA rewrite.
+- `VITE_SUPABASE_PROJECT_ID`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
+- `VITE_SUPABASE_URL`
 
-### Supabase
-
-Deploy the database migrations and Edge Functions to the Supabase project used by the frontend. Configure the server-side Edge Function secrets separately from the Vercel frontend variables.
-
-## Configuration
-
-- `vite.config.ts` controls the dev server, PWA generation, service-worker caching, path aliases, and production chunking.
-- `vercel.json` controls the SPA fallback rewrite.
-- `tailwind.config.ts` controls Tailwind styling.
-- `components.json` configures the shared UI component setup.
-- `tsconfig*.json` controls TypeScript compilation.
-- `vitest.config.ts` configures the jsdom test environment and test setup file.
-- `supabase/config.toml` identifies the Supabase project used by the repository.
-
-## Testing and Verification
-
-The project uses Vitest with a jsdom environment and `src/test/setup.ts` as the test setup file.
-
-Run the test suite with:
-
-```bash
-npm test
-```
-
-Run lint checks with:
-
-```bash
-npm run lint
-```
-
-For a deployment check, also run:
-
-```bash
-npm run build
-```
-
-The current repository contains a basic example test at `src/test/example.test.ts`. Additional application behavior is primarily implemented in the feature modules and Supabase-backed flows.
-
-## Troubleshooting
-
-### Supabase connection errors
-
-Check that `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` are present in the environment used to start or build the app. Restart the Vite server after changing `.env` values.
-
-### Authentication works locally but not after deployment
-
-Verify the deployed site's URL is allowed by the Supabase Auth configuration and that the same frontend Supabase variables are configured in the deployment environment.
-
-### Direct route loads return 404 on Vercel
-
-Keep the `vercel.json` SPA rewrite in place so routes such as `/classroom`, `/notes`, and `/timetable` fall back to `index.html`.
-
-### Edge Function requests return `401 Unauthorized`
-
-Check the `Authorization: Bearer ...` header and confirm that the token matches the configured `CRON_SECRET` or `SUPABASE_SERVICE_ROLE_KEY`, as required by the individual function.
-
-### Browser notifications do not appear
-
-Grant browser notification permission and use a browser/context that supports the Notification API and service workers. The app only starts its periodic notification checks after permission is granted.
-
-### PWA or cached data looks stale
-
-The service worker uses caching strategies defined in `vite.config.ts`. During development, test production PWA behavior with a production build and preview/deployment rather than relying on the Vite development server.
-
-## Maintenance
-
-When modifying the project:
-
-- Keep database changes in new Supabase migration files rather than editing already-applied migrations.
-- Update `src/integrations/supabase/types.ts` when the database schema changes so typed queries remain aligned with the database.
-- Keep frontend `VITE_*` variables limited to values that are safe to expose to the browser.
-- Keep service-role and cron credentials server-side only.
-- Run `npm run lint`, `npm test`, and `npm run build` before deployment.
-- Update `vercel.json` only when the client-side routing/deployment behavior changes.
-- Preserve the feature-based structure under `src/features/` when adding new modules.
-
-## License
-
-No license file is included in the repository, so no license terms are documented here.
+Use `.env.example` as the variable-name template. Do not commit the local `.env` file.

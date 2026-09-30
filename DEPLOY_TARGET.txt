@@ -1,0 +1,4 @@
+Campus Duty - Vercel Ready
+Install: npm ci
+Build: npm run build
+Output: dist
